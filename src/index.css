@@ -1,0 +1,16 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+.Polaris-Text--bodyMd {
+  font-size: 16px !important; /* Điều chỉnh cỡ chữ theo ý muốn */
+  font-weight: 600 !important;
+}
+.Polaris-Button {
+  padding: 10px !important; /* Điều chỉnh padding theo ý muốn */
+  height: fit-content !important;
+}
