@@ -6,9 +6,10 @@ import {
   Modal,
   Select,
   TextField,
+  Toast,
 } from "@shopify/polaris";
 import { PlusIcon, SearchIcon } from "@shopify/polaris-icons";
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { paginationOptions, statusOptions } from "../common/ComonProduct";
 import ChipStatus from "../custom/ChipStatus";
 import PaginationCustome from "../custom/PaginationCustome";
@@ -27,6 +28,8 @@ const Products: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [itemsPerPage, setItemsPerPage] = useState<number>(5);
+  const [active, setActive] = useState(false);
+  const [titleToast, setTitleToast] = useState<string>("");
   useEffect(() => {
     fetch("https://jsonplaceholder.typicode.com/posts")
       .then((res) => res.json())
@@ -75,6 +78,11 @@ const Products: React.FC = () => {
     setSelectedProduct(product);
     setIsRuleModalActive(!isRuleModalActive);
   };
+  const toggleActive = useCallback(() => setActive((active) => !active), []);
+
+  const toastMarkup = active ? (
+    <Toast content={titleToast} tone="magic" onDismiss={toggleActive} />
+  ) : null;
 
   return (
     <div className="text-2xl px-9 font-bold">
@@ -102,6 +110,7 @@ const Products: React.FC = () => {
           />
         </div>
         {/* Toast */}
+        {toastMarkup}
         {/* Product Table */}
         {loading ? (
           <div>Loading...</div>
@@ -176,12 +185,16 @@ const Products: React.FC = () => {
         <AddNewProductModal
           isModalActive={isModalActive}
           toggleModal={toggleModal}
+          toggleActive={toggleActive}
+          setTitleToast={setTitleToast}
         />
         {selectedProduct && (
           <AddRuleModal
             isRuleModalActive={isRuleModalActive}
             toggleRuleModal={toggleRuleModal}
+            toggleActive={toggleActive}
             selectedProduct={selectedProduct}
+            setTitleToast={setTitleToast}
           />
         )}
         {/* Add Rule Product Modal */}

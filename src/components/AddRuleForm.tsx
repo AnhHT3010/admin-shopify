@@ -1,5 +1,5 @@
 import { Stack, Typography } from "@mui/material";
-import { Button, Icon, Modal, TextField, Toast } from "@shopify/polaris";
+import { Button, Icon, Modal, TextField } from "@shopify/polaris";
 import { AlertCircleIcon, DeleteIcon, PlusIcon } from "@shopify/polaris-icons";
 import {
   Field,
@@ -8,7 +8,7 @@ import {
   FormikProvider,
   useFormik,
 } from "formik";
-import React, { useCallback, useState } from "react";
+import React from "react";
 import * as Yup from "yup";
 import { TextFieldStyled } from "../custom/StyleComponent";
 import { Product } from "../types/product-manager.type";
@@ -17,22 +17,17 @@ interface AddRuleModalProps {
   isRuleModalActive: boolean;
   toggleRuleModal: () => void;
   selectedProduct: Product;
+  setTitleToast: (value: string) => void;
+  toggleActive: () => void;
 }
 
 const AddRuleModal: React.FC<AddRuleModalProps> = ({
   isRuleModalActive,
   toggleRuleModal,
   selectedProduct,
+  toggleActive,
+  setTitleToast,
 }) => {
-  const [active, setActive] = useState(false);
-  const toggleActive = useCallback(() => setActive((active) => !active), []);
-  const toastMarkup = active ? (
-    <Toast
-      content="Add Rule Product Success"
-      tone="magic"
-      onDismiss={toggleActive}
-    />
-  ) : null;
   const validationSchema = Yup.object().shape({
     title: Yup.string().required("Title is required"),
     startDate: Yup.date().required("Start date is required"),
@@ -65,6 +60,7 @@ const AddRuleModal: React.FC<AddRuleModalProps> = ({
       console.log("Form Values:", values);
       toggleActive();
       formik.resetForm();
+      setTitleToast("Add Rule Success");
       toggleRuleModal();
     },
   });
@@ -164,7 +160,6 @@ const AddRuleModal: React.FC<AddRuleModalProps> = ({
                       {...field}
                       value={formik.values.endDate}
                       onChange={(event) => {
-                        console.log(event.target.value);
                         formik.setFieldValue("endDate", event.target.value);
                       }}
                       error={Boolean(meta.touched && meta.error)}
@@ -308,7 +303,6 @@ const AddRuleModal: React.FC<AddRuleModalProps> = ({
             )}
           </FieldArray>
         </FormikProvider>
-        {toastMarkup}
       </Modal.Section>
     </Modal>
   );
