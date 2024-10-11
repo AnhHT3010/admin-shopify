@@ -19,3 +19,9 @@
 .Polaris-Text--bodyMd {
   font-size: 14px !important;
 }
+
+.MuiTypography-root {
+  font-family: inherit !important;
+  font-size: 14px !important;
+  font-weight: 600 !important;
+}

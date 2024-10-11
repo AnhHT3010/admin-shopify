@@ -1,22 +1,23 @@
 import { Stack } from "@mui/material";
-import { DropZone, Icon, Modal, TextField } from "@shopify/polaris";
+import { DropZone, Icon, Modal, TextField, Toast } from "@shopify/polaris";
 import { AlertCircleIcon, XIcon } from "@shopify/polaris-icons";
 import { Field, FieldProps, FormikProvider, useFormik } from "formik";
-import React from "react";
+import React, { useCallback, useState } from "react";
 import * as Yup from "yup";
 import { FormCreateProduct } from "../types/product-manager.type";
 
 interface AddNewProductModalProps {
   isModalActive: boolean;
   toggleModal: () => void;
-  toggleActive: () => void;
 }
 
 const AddNewProductModal: React.FC<AddNewProductModalProps> = ({
   isModalActive,
   toggleModal,
-  toggleActive,
 }) => {
+  const [active, setActive] = useState(false);
+  const toggleActive = useCallback(() => setActive((active) => !active), []);
+
   const validImageTypes = ["image/gif", "image/jpeg", "image/png"];
   const formik = useFormik<FormCreateProduct>({
     initialValues: {
@@ -52,6 +53,13 @@ const AddNewProductModal: React.FC<AddNewProductModalProps> = ({
       toggleModal();
     },
   });
+  const toastMarkup = active ? (
+    <Toast
+      content="Add Product Success"
+      tone="magic"
+      onDismiss={toggleActive}
+    />
+  ) : null;
 
   /*  Handle When Upload Img */
   const handleDropZoneDrop = (acceptedFiles: File[]) =>
@@ -172,6 +180,7 @@ const AddNewProductModal: React.FC<AddNewProductModalProps> = ({
             </Field>
           </Stack>
         </FormikProvider>
+        {toastMarkup}
       </Modal.Section>
     </Modal>
   );
