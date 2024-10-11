@@ -8,6 +8,7 @@ import {
   Modal,
   Select,
   TextField,
+  Toast,
 } from "@shopify/polaris";
 import {
   AlertCircleIcon,
@@ -16,7 +17,7 @@ import {
   XIcon,
 } from "@shopify/polaris-icons";
 import { Field, FieldProps, FormikProvider, useFormik } from "formik";
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import * as Yup from "yup";
 import ChipStatus from "../custom/ChipStatus";
 import PaginationCustome from "../custom/PaginationCustome";
@@ -25,6 +26,7 @@ import {
   IResponseDataPost,
   Product,
 } from "../types/product-manager.type";
+import { paginationOptions, statusOptions } from "../common/ComonProduct";
 
 const Products: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
@@ -37,8 +39,8 @@ const Products: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [itemsPerPage, setItemsPerPage] = useState<number>(5);
+  const [active, setActive] = useState(false);
   const validImageTypes = ["image/gif", "image/jpeg", "image/png"];
-
   useEffect(() => {
     fetch("https://jsonplaceholder.typicode.com/posts")
       .then((res) => res.json())
@@ -62,7 +64,8 @@ const Products: React.FC = () => {
     const filtered = products.filter(
       (product) =>
         product.title.toLowerCase().includes(searchQuery.toLowerCase()) &&
-        (filterStatus === "" || product.status === filterStatus)
+        (filterStatus === "" ||
+          (Number(product.rules) > 0 ? "Active" : "No rule") === filterStatus)
     );
     setFilteredProducts(filtered);
     setCurrentPage(1);
@@ -86,7 +89,15 @@ const Products: React.FC = () => {
     setSelectedProduct(product);
     setIsRuleModalActive(!isRuleModalActive);
   };
+  const toggleActive = useCallback(() => setActive((active) => !active), []);
 
+  const toastMarkup = active ? (
+    <Toast
+      content="Add Product Success"
+      tone="magic"
+      onDismiss={toggleActive}
+    />
+  ) : null;
   const formik = useFormik<FormCreateProduct>({
     initialValues: {
       title: "",
@@ -116,23 +127,11 @@ const Products: React.FC = () => {
     }),
     onSubmit: (values) => {
       console.log("Form values:", values);
+      toggleActive();
       formik.resetForm();
-      // Xử lý upload ảnh và submit form
-      toggleModal(); // Đóng modal sau khi submit
+      toggleModal();
     },
   });
-
-  const statusOptions = [
-    { label: "All", value: "" },
-    { label: "Active", value: "Active" },
-    { label: "No rule", value: "No rule" },
-  ];
-
-  const paginationOptions = [
-    { label: "5", value: "5" },
-    { label: "10", value: "10" },
-    { label: "15", value: "15" },
-  ];
 
   // Xử lý khi chọn file ảnh
   const handleDropZoneDrop = (_dropFiles: File[], acceptedFiles: File[]) =>
@@ -160,6 +159,9 @@ const Products: React.FC = () => {
             value={filterStatus}
           />
         </div>
+
+        {/* Toast */}
+        {toastMarkup}
 
         {/* Product Table */}
         {loading ? (
@@ -243,7 +245,7 @@ const Products: React.FC = () => {
           secondaryActions={[
             {
               content: "Cancel",
-              onAction: toggleModal, // Nút Cancel để đóng modal
+              onAction: toggleModal,
             },
           ]}
         >
@@ -255,7 +257,7 @@ const Products: React.FC = () => {
                   {({ field }: FieldProps) => (
                     <TextField
                       label="Title"
-                      {...field} // Lấy giá trị và onChange từ Formik thông qua FieldProps
+                      {...field}
                       error={formik.touched.title && formik.errors.title}
                       value={formik.values.title}
                       onChange={(value) => formik.setFieldValue("title", value)}
@@ -271,7 +273,7 @@ const Products: React.FC = () => {
                     <TextField
                       label="Price"
                       type="number"
-                      {...field} // Lấy giá trị và onChange từ Formik thông qua FieldProps
+                      {...field}
                       value={formik.values.price}
                       error={formik.touched.price && formik.errors.price}
                       onChange={(value) => formik.setFieldValue("price", value)}
@@ -289,22 +291,18 @@ const Products: React.FC = () => {
                 >
                   {formik.values.imageFile &&
                   validImageTypes.includes(formik.values.imageFile.type) ? (
-                    <div className="relative w-full">
-                      {/* Image Preview */}
+                    <div className="relative w-full h-80">
                       <img
                         alt="Upload preview"
                         src={URL.createObjectURL(formik.values.imageFile)}
-                        className="w-full"
+                        className="w-full h-full object-contain"
                       />
-
-                      {/* XIcon for removing image */}
                       <button
                         type="button"
-                        onClick={() => formik.setFieldValue("imageFile", null)} // Clear the image
+                        onClick={() => formik.setFieldValue("imageFile", null)}
                         className="absolute top-2 right-2 bg-black bg-opacity-50 text-white rounded-full p-1 hover:opacity-90"
                       >
                         <Icon source={XIcon} />
-                        {/* Shopify XIcon */}
                       </button>
                     </div>
                   ) : (

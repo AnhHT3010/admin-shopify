@@ -1,6 +1,12 @@
 import { Frame, Navigation } from "@shopify/polaris";
 import React from "react";
-import { Route, Routes, useLocation, useNavigate } from "react-router-dom";
+import {
+  Navigate,
+  Route,
+  Routes,
+  useLocation,
+  useNavigate,
+} from "react-router-dom";
 import Dashboard from "../components/Dashboard";
 import Products from "../components/Products";
 import Settings from "../components/Settings";
@@ -25,6 +31,7 @@ const Admin: React.FC = () => {
         </Navigation>
         <div className="flex-1 p-5 bg-white overflow-auto">
           <Routes>
+            <Route path="/" element={<Navigate to="/dashboard" />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/products" element={<Products />} />
             <Route path="/settings" element={<Settings />} />
