@@ -64,6 +64,8 @@ const AddRuleModal: React.FC<AddRuleModalProps> = ({
     onSubmit: (values) => {
       console.log("Form Values:", values);
       toggleActive();
+      formik.resetForm();
+      toggleRuleModal();
     },
   });
 
