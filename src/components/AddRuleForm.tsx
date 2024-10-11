@@ -201,7 +201,7 @@ const AddRuleModal: React.FC<AddRuleModalProps> = ({
           <FieldArray name="rules">
             {({ push, remove }) => (
               <Stack direction="column">
-                {formik.values.rules.map((rule, index) => (
+                {formik.values.rules.map((_, index) => (
                   <div key={index} className="rule-item">
                     <div className="rule-inputs flex flex-row gap-2 items-start justify-center">
                       <div className="!w-1/3">
