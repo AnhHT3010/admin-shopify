@@ -1,8 +1,6 @@
-import { Stack } from "@mui/material";
 import {
   Button,
   Card,
-  DropZone,
   Icon,
   IndexTable,
   Modal,
@@ -10,23 +8,14 @@ import {
   TextField,
   Toast,
 } from "@shopify/polaris";
-import {
-  AlertCircleIcon,
-  PlusIcon,
-  SearchIcon,
-  XIcon,
-} from "@shopify/polaris-icons";
-import { Field, FieldProps, FormikProvider, useFormik } from "formik";
+import { PlusIcon, SearchIcon } from "@shopify/polaris-icons";
 import React, { useCallback, useEffect, useState } from "react";
-import * as Yup from "yup";
+import { paginationOptions, statusOptions } from "../common/ComonProduct";
 import ChipStatus from "../custom/ChipStatus";
 import PaginationCustome from "../custom/PaginationCustome";
-import {
-  FormCreateProduct,
-  IResponseDataPost,
-  Product,
-} from "../types/product-manager.type";
-import { paginationOptions, statusOptions } from "../common/ComonProduct";
+import { IResponseDataPost, Product } from "../types/product-manager.type";
+import AddNewProductModal from "./AddNewProductModal";
+import AddRuleModal from "./AddRuleForm";
 
 const Products: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
@@ -40,7 +29,6 @@ const Products: React.FC = () => {
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [itemsPerPage, setItemsPerPage] = useState<number>(5);
   const [active, setActive] = useState(false);
-  const validImageTypes = ["image/gif", "image/jpeg", "image/png"];
   useEffect(() => {
     fetch("https://jsonplaceholder.typicode.com/posts")
       .then((res) => res.json())
@@ -98,49 +86,14 @@ const Products: React.FC = () => {
       onDismiss={toggleActive}
     />
   ) : null;
-  const formik = useFormik<FormCreateProduct>({
-    initialValues: {
-      title: "",
-      price: "",
-      description: "",
-      imageFile: null,
-    },
-    validationSchema: Yup.object({
-      title: Yup.string().required("Title is required"),
-      price: Yup.number()
-        .typeError("Price must be a number")
-        .positive("Price must be positive")
-        .required("Price is required"),
-      description: Yup.string().required("Description is required"),
-      imageFile: Yup.mixed()
-        .required("Image is required")
-        .test(
-          "fileType",
-          "Unsupported file type. Only jpeg, png, gif are allowed.",
-          (value: unknown) => {
-            if (value instanceof File) {
-              return validImageTypes.includes(value.type);
-            }
-            return false;
-          }
-        ),
-    }),
-    onSubmit: (values) => {
-      console.log("Form values:", values);
-      toggleActive();
-      formik.resetForm();
-      toggleModal();
-    },
-  });
 
-  // Xử lý khi chọn file ảnh
-  const handleDropZoneDrop = (_dropFiles: File[], acceptedFiles: File[]) =>
-    formik.setFieldValue("imageFile", acceptedFiles[0]);
   return (
     <div className="text-2xl px-9 font-bold">
       <div className=" mb-8 flex justify-between items-center">
         <div className="text-2xl font-bold">Products</div>
-        <Button onClick={toggleModal}>Add Product</Button>
+        <Button icon={PlusIcon} onClick={toggleModal}>
+          Add Product
+        </Button>
       </div>
       <div>
         {/* Search title and Filter Section */}
@@ -159,10 +112,8 @@ const Products: React.FC = () => {
             value={filterStatus}
           />
         </div>
-
         {/* Toast */}
         {toastMarkup}
-
         {/* Product Table */}
         {loading ? (
           <div>Loading...</div>
@@ -233,125 +184,21 @@ const Products: React.FC = () => {
             </Card>
           </div>
         )}
-
-        <Modal
-          open={isModalActive}
-          onClose={toggleModal}
-          title="Add New Product"
-          primaryAction={{
-            content: "Save",
-            onAction: formik.handleSubmit,
-          }}
-          secondaryActions={[
-            {
-              content: "Cancel",
-              onAction: toggleModal,
-            },
-          ]}
-        >
-          <Modal.Section>
-            <FormikProvider value={formik}>
-              <Stack direction="column" gap={2}>
-                {/* Title Field */}
-                <Field name="title">
-                  {({ field }: FieldProps) => (
-                    <TextField
-                      label="Title"
-                      {...field}
-                      error={formik.touched.title && formik.errors.title}
-                      value={formik.values.title}
-                      onChange={(value) => formik.setFieldValue("title", value)}
-                      multiline={1}
-                      autoComplete="off"
-                    />
-                  )}
-                </Field>
-
-                {/* Price Field */}
-                <Field name="price">
-                  {({ field }: FieldProps) => (
-                    <TextField
-                      label="Price"
-                      type="number"
-                      {...field}
-                      value={formik.values.price}
-                      error={formik.touched.price && formik.errors.price}
-                      onChange={(value) => formik.setFieldValue("price", value)}
-                      autoComplete="off"
-                    />
-                  )}
-                </Field>
-
-                {/* DropZone for Image Upload */}
-                <DropZone
-                  label="Image"
-                  accept="image/*"
-                  type="image"
-                  onDrop={handleDropZoneDrop}
-                >
-                  {formik.values.imageFile &&
-                  validImageTypes.includes(formik.values.imageFile.type) ? (
-                    <div className="relative w-full h-80">
-                      <img
-                        alt="Upload preview"
-                        src={URL.createObjectURL(formik.values.imageFile)}
-                        className="w-full h-full object-contain"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => formik.setFieldValue("imageFile", null)}
-                        className="absolute top-2 right-2 bg-black bg-opacity-50 text-white rounded-full p-1 hover:opacity-90"
-                      >
-                        <Icon source={XIcon} />
-                      </button>
-                    </div>
-                  ) : (
-                    <>
-                      <DropZone.FileUpload actionHint="Accepts .gif, .jpg, and .png" />
-                    </>
-                  )}
-                </DropZone>
-                {/* Error Handling */}
-                {formik.touched.imageFile && formik.errors.imageFile && (
-                  <Stack
-                    direction="row"
-                    justifyContent="flex-start"
-                    alignItems="center"
-                    gap={1}
-                    className="!mt-[-12px]"
-                  >
-                    <div>
-                      <Icon source={AlertCircleIcon} tone="textCritical" />
-                    </div>
-                    <div className="text-[#8E0B21] text-base font-semibold">
-                      {formik.errors.imageFile}
-                    </div>
-                  </Stack>
-                )}
-
-                {/* Description Field */}
-                <Field name="description">
-                  {({ field }: FieldProps) => (
-                    <TextField
-                      label="Description"
-                      {...field}
-                      error={
-                        formik.touched.description && formik.errors.description
-                      }
-                      value={formik.values.description}
-                      onChange={(value) =>
-                        formik.setFieldValue("description", value)
-                      }
-                      multiline={4}
-                      autoComplete="off"
-                    />
-                  )}
-                </Field>
-              </Stack>
-            </FormikProvider>
-          </Modal.Section>
-        </Modal>
-
+        {/* Add New Product Modal */}
+        <AddNewProductModal
+          isModalActive={isModalActive}
+          toggleModal={toggleModal}
+          toggleActive={toggleActive}
+        />
+        {selectedProduct && (
+          <AddRuleModal
+            isRuleModalActive={isRuleModalActive}
+            toggleRuleModal={toggleRuleModal}
+            toggleActive={toggleActive}
+            selectedProduct={selectedProduct}
+          />
+        )}
+        {/* Add Rule Product Modal */}
         <Modal
           open={isRuleModalActive}
           onClose={() => toggleRuleModal(null)}

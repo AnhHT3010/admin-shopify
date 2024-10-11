@@ -25,7 +25,7 @@ admin-shopify-xipat/
 1. **Clone the repository:**
 
 ```sh
-git clone https://github.com/yourusername/admin-shopify-xipat.git
+git clone https://github.com/AnhHT3010/admin-shopify.git
 cd admin-shopify-xipat
 ```
 

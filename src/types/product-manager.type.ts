@@ -16,7 +16,7 @@ export interface IResponseDataPost {
 
 export interface FormCreateProduct {
   title: string;
-  price: string;
+  price: number;
   imageFile: File | null;
   description: string;
 }
